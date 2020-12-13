@@ -97,7 +97,7 @@ char *usage = "Usage: gpio -v\n"
      //         "       gpio [-p] <read/write/wb> ...\n"
               "       gpio <mode/qmode/read/write/pwm> ...\n"
      //		  "       gpio <mode/qmode/read/write> ...\n"
-              "       gpio <toggle/blink> <pin>\n"
+              "       gpio <toggle/blink> <pin> [delay]\n"
 	      "       gpio readall\n"
 	      "       gpio unexportall/exports\n"
 	      "       gpio export/edge/unexport ...\n"
@@ -1242,19 +1242,31 @@ void doBlink (int argc, char *argv [])
 {
   int pin ;
 
-  if (argc != 3)
+  if (argc < 3)
   {
-    fprintf (stderr, "Usage: %s blink pin\n", argv [0]) ;
+    fprintf (stderr, "Usage: %s blink pin [delay-ms=500] [limit-ms=0]\n", argv [0]) ;
     exit (1) ;
   }
 
   pin = atoi (argv [2]) ;
+  unsigned long delayMs = 500;
+  unsigned long limitMs = 0;
+  if (argc >= 4)
+	  delayMs = atoi (argv [3]) ;
+  if (argc >= 5)
+	  limitMs = atoi (argv [4]) ;
 
   pinMode (pin, OUTPUT) ;
   for (;;)
   {
     digitalWrite (pin, !digitalRead (pin)) ;
-    delay (500) ;
+    delay(delayMs);
+    if (limitMs != 0) {
+	    limitMs -= delayMs;
+	    if (limitMs <= 0) {
+		    break;
+	    }
+    }
   }
 
 }
